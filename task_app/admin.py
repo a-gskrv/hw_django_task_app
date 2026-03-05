@@ -4,17 +4,15 @@ from task_app.models import Task, SubTask, Category
 
 
 @admin.register(Task)
-class BorrowAdmin(admin.ModelAdmin):
+class TaskAdmin(admin.ModelAdmin):
     list_display = [
         'title',
-        'categories',
         'status',
         'deadline',
         'created_at',
     ]
 
     list_filter = [
-        'categories',
         'status',
         'deadline',
     ]
@@ -30,7 +28,7 @@ class BorrowAdmin(admin.ModelAdmin):
 
 
 @admin.register(SubTask)
-class BorrowAdmin(admin.ModelAdmin):
+class SubTaskAdmin(admin.ModelAdmin):
     list_display = [
         'title',
         'task',
@@ -56,7 +54,7 @@ class BorrowAdmin(admin.ModelAdmin):
 
 
 @admin.register(Category)
-class BorrowAdmin(admin.ModelAdmin):
+class CategoryAdmin(admin.ModelAdmin):
     list_display = [
         'name',
     ]

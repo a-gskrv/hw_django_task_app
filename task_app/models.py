@@ -61,7 +61,7 @@ class Task(models.Model):
         constraints = [
             models.UniqueConstraint(
                 Lower("title"),
-                name="unique_lower_title"
+                name="unique_lower_title_task"
             )
         ]
 
@@ -118,7 +118,7 @@ class SubTask(models.Model):
         constraints = [
             models.UniqueConstraint(
                 Lower("title"),
-                name="unique_lower_title"
+                name="unique_lower_title_subtask"
             )
         ]
 
