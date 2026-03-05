@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.core.validators import MaxLengthValidator
 from django.db import models
+from django.db.models.functions import Lower
 
 STATUS_CHOICES = (
     ('10', 'New'),
@@ -10,6 +11,7 @@ STATUS_CHOICES = (
     ('40', 'Blocked'),
     ('50', 'Done'),
 )
+
 
 class Task(models.Model):
     title: str = models.CharField(
@@ -49,6 +51,26 @@ class Task(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        db_table = 'task_manager_task'
+        verbose_name = 'Task'
+        verbose_name_plural = 'Tasks'
+
+        ordering = ['-created_at']
+
+        constraints = [
+            models.UniqueConstraint(
+                Lower("title"),
+                name="unique_lower_title"
+            )
+        ]
+
+    def __str__(self):
+        if len(self.title) > 20:
+            return self.title[:17] + '...'
+        return self.title
+
+
 class SubTask(models.Model):
     title: str = models.CharField(
         max_length=100,
@@ -66,7 +88,7 @@ class SubTask(models.Model):
 
     task = models.ForeignKey(
         Task,
-        on_delete=models.PROTECT, # CASCADE,
+        on_delete=models.PROTECT,  # CASCADE,
         related_name='subtasks',
     )
 
@@ -86,6 +108,25 @@ class SubTask(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        db_table = 'task_manager_subtask'
+        verbose_name = 'SubTask'
+        verbose_name_plural = 'SubTasks'
+
+        ordering = ['-created_at']
+
+        constraints = [
+            models.UniqueConstraint(
+                Lower("title"),
+                name="unique_lower_title"
+            )
+        ]
+
+    def __str__(self):
+        if len(self.title) > 20:
+            return self.title[:17] + '...'
+        return self.title
+
 
 class Category(models.Model):
     name: str = models.CharField(
@@ -93,3 +134,20 @@ class Category(models.Model):
         unique=True,
         verbose_name='Category name',
     )
+
+    class Meta:
+        db_table = 'task_manager_category'
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+
+        constraints = [
+            models.UniqueConstraint(
+                Lower("name"),
+                name="unique_lower_category"
+            )
+        ]
+
+    def __str__(self):
+        if len(self.name) > 20:
+            return self.name[:17] + '...'
+        return self.name
