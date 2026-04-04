@@ -66,10 +66,9 @@ class Task(models.Model):
         ]
 
     def __str__(self):
-        if len(self.title) > 20:
-            return self.title[:17] + '...'
+        # if len(self.title) > 20:
+        #     return self.title[:17] + '...'
         return self.title
-
 
 class SubTask(models.Model):
     title: str = models.CharField(
@@ -118,13 +117,14 @@ class SubTask(models.Model):
         constraints = [
             models.UniqueConstraint(
                 Lower("title"),
+                Lower("task"),
                 name="unique_lower_title_subtask"
             )
         ]
 
     def __str__(self):
-        if len(self.title) > 20:
-            return self.title[:17] + '...'
+        # if len(self.title) > 20:
+        #     return self.title[:17] + '...'
         return self.title
 
 
@@ -148,6 +148,6 @@ class Category(models.Model):
         ]
 
     def __str__(self):
-        if len(self.name) > 20:
-            return self.name[:17] + '...'
+        # if len(self.name) > 20:
+        #     return self.name[:17] + '...'
         return self.name
