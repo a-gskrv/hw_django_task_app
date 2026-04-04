@@ -39,7 +39,7 @@ class Task(models.Model):
         verbose_name='Task status',
         max_length=20,
         choices=STATUS_CHOICES,
-        default="0"
+        default="10"
     )
 
     deadline: datetime = models.DateTimeField(
