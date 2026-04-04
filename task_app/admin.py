@@ -3,10 +3,27 @@ from django.contrib import admin
 from task_app.models import Task, SubTask, Category
 
 
+
+class SubTaskInline(admin.StackedInline):
+    model = SubTask
+    extra = 0
+    max_num = 5
+    readonly_fields = ('created',)
+    verbose_name = "Sub Task"
+    verbose_name_plural = 'Sub Tasks'
+
+    fieldsets = (
+        ("Task Details", {
+            "fields": ("title", "task", "description"),
+        })
+    )
+
+
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
     list_display = [
-        'title',
+        # 'title',
+        'short_title'
         'status',
         'deadline',
         'created_at',
@@ -25,6 +42,24 @@ class TaskAdmin(admin.ModelAdmin):
     list_editable = ('status', 'deadline')
 
     list_per_page = 25
+
+    inlines = (
+        SubTaskInline,
+    )
+
+    @admin.display(description="Название", ordering="title")
+    def short_title(self, obj):
+        if obj.title > 10:
+            return obj.title[:10] + '...'
+        return obj.title
+
+    # def short_title(self, obj):
+    #     if obj.title > 10:
+    #         return obj.title[:10] + '...'
+    #     return obj.title
+    #
+    # short_title.short_description = 'Название'
+    # short_title.admin_order_field = 'title'
 
 
 @admin.register(SubTask)
@@ -52,6 +87,20 @@ class SubTaskAdmin(admin.ModelAdmin):
 
     list_per_page = 25
 
+    actions = [
+        "mark_as_done"
+    ]
+
+    @admin.action(description="Mark as done")
+    def mark_as_done(self, request, queryset):
+        queryset.update(status="5")
+        self.message_user(
+            request,
+            "Sub Task marked as done.",
+        )
+
+    # mark_as_done.short_description = "Mark Sub Task as done"
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -64,3 +113,4 @@ class CategoryAdmin(admin.ModelAdmin):
     ]
 
     list_per_page = 25
+
