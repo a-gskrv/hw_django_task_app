@@ -1,10 +1,12 @@
 from datetime import datetime
 
 from django.db.models import Count
+from django.db.models.functions import ExtractIsoWeekDay
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from task_app.models import Task
 from task_app.serializers.task import TaskCreateSerializer, TaskSerializer
@@ -60,3 +62,36 @@ def tasks_stat(request: Request) -> Response:
         data=data,
         status=status.HTTP_200_OK,
     )
+
+
+class TaskListView(APIView):
+
+    def get(self,request,*args,**kwargs):
+        objs = Task.objects.all()
+
+        weekday = request.query_params.get('weekday')
+        if weekday is not None:
+            try:
+                weekday = int(weekday)
+                objs = objs.annotate(
+                    weekday=ExtractIsoWeekDay('deadline')
+                ).filter(weekday=weekday)
+            except ValueError:
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            objs = objs.order_by('id')
+
+            serializer = TaskSerializer(objs, many=True)
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_200_OK,
+            )
+
+
+        serializer = TaskSerializer(objs, many=True)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK,
+        )

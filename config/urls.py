@@ -26,7 +26,7 @@ from task_app.views.tasks import (
     task_create,
     task_get_by_id,
     task_get_all,
-    tasks_stat,
+    tasks_stat, TaskListView,
 )
 
 
@@ -36,8 +36,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('task/', task_create),
     path('task/<int:pk>', task_get_by_id),
-    path('tasks/', task_get_all),
+    # path('tasks/', task_get_all),
     path('tasks_stat/', tasks_stat),
     path('subtasks/', SubTaskListCreateView.as_view()),
     path('subtasks/<int:pk>/', SubTaskDetailUpdateDeleteView.as_view()),
+    path('tasks/', TaskListView.as_view()),
 ]
