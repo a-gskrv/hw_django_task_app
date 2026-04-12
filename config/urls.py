@@ -17,13 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-# from task_app.views import index
+from task_app.views.sub_tasks import (
+    SubTaskListCreateView,
+    SubTaskDetailUpdateDeleteView
+)
+
 from task_app.views.tasks import (
     task_create,
     task_get_by_id,
     task_get_all,
     tasks_stat,
 )
+
+
 
 urlpatterns = [
     # path('', index),
@@ -32,4 +38,6 @@ urlpatterns = [
     path('task/<int:pk>', task_get_by_id),
     path('tasks/', task_get_all),
     path('tasks_stat/', tasks_stat),
+    path('subtasks/', SubTaskListCreateView.as_view()),
+    path('subtasks/<int:pk>/', SubTaskDetailUpdateDeleteView.as_view()),
 ]
