@@ -1,16 +1,20 @@
 from task_app.serializers.task import (
     TaskCreateSerializer,
-    TaskSerializer
+    TaskSerializer,
+    TaskDetailSerializer
 )
 from task_app.serializers.sub_task import (
+    SubTaskSerializer,
     SubTaskCreateSerializer,
-    SubTaskSerializer
+    SubTaskDetailSerializer
 )
 
 
 __all__ = [
     'TaskCreateSerializer',
     'TaskSerializer',
-    'SubTaskCreateSerializer',
+    'TaskDetailSerializer',
     'SubTaskSerializer',
+    'SubTaskCreateSerializer',
+    'SubTaskDetailSerializer',
 ]

@@ -18,15 +18,17 @@ from django.contrib import admin
 from django.urls import path
 
 from task_app.views.sub_tasks import (
-    SubTaskListCreateView,
+    SubTaskListCreateAPIView,
     SubTaskDetailUpdateDeleteView
 )
 
 from task_app.views.tasks import (
-    task_create,
-    task_get_by_id,
-    task_get_all,
-    tasks_stat, TaskListView,
+    # task_create,
+    # task_get_by_id,
+    # task_get_all,
+    tasks_stat,
+    TaskListCreateAPIView,
+    TaskDetailUpdateDeleteAPIView,
 )
 
 
@@ -34,11 +36,13 @@ from task_app.views.tasks import (
 urlpatterns = [
     # path('', index),
     path('admin/', admin.site.urls),
-    path('task/', task_create),
-    path('task/<int:pk>', task_get_by_id),
+    # path('task/', task_create),
+    # path('task/<int:pk>', task_get_by_id),
     # path('tasks/', task_get_all),
     path('tasks_stat/', tasks_stat),
-    path('subtasks/', SubTaskListCreateView.as_view()),
+    path('subtasks/', SubTaskListCreateAPIView.as_view()),
     path('subtasks/<int:pk>/', SubTaskDetailUpdateDeleteView.as_view()),
-    path('tasks/', TaskListView.as_view()),
+
+    path('tasks/', TaskListCreateAPIView.as_view()),
+    path('tasks/<int:pk>/', TaskDetailUpdateDeleteAPIView.as_view()),
 ]
