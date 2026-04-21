@@ -16,6 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_framework.routers import DefaultRouter
+
+from task_app.views.categories import CategoryViewSet
 
 from task_app.views.sub_tasks import (
     SubTaskListCreateAPIView,
@@ -32,6 +35,8 @@ from task_app.views.tasks import (
 )
 
 
+router = DefaultRouter()
+router.register('categories', CategoryViewSet)
 
 urlpatterns = [
     # path('', index),
@@ -45,4 +50,7 @@ urlpatterns = [
 
     path('tasks/', TaskListCreateAPIView.as_view()),
     path('tasks/<int:pk>/', TaskDetailUpdateDeleteAPIView.as_view()),
+
 ]
+
+urlpatterns += router.urls

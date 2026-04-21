@@ -3,8 +3,18 @@ from rest_framework import serializers
 from task_app.models import SubTask, Category
 
 
-class CategoryCreateSerializer (serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = [
+            'id',
+            'name',
+        ]
+
+
+class CategoryCreateSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = Category
         fields = '__all__'
@@ -19,7 +29,6 @@ class CategoryCreateSerializer (serializers.ModelSerializer):
                     f'Категория {category_name} уже существует в БД.'
                 )
             return Category.objects.create(**validated_data)
-
 
         def update(self, instance, validated_data):
             category_name = validated_data['name']
