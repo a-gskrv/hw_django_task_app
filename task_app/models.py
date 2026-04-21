@@ -61,7 +61,8 @@ class Task(models.Model):
         constraints = [
             models.UniqueConstraint(
                 Lower("title"),
-                name="unique_lower_title_task"
+                'deadline',
+                name="unique_lower_title_deadline_task"
             )
         ]
 

@@ -2,50 +2,23 @@ from datetime import datetime
 
 from django.db.models import Count
 from django.db.models.functions import ExtractIsoWeekDay
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from task_app.models import Task
-from task_app.serializers.task import TaskCreateSerializer, TaskSerializer
+from task_app.serializers import (
+    TaskCreateSerializer,
+    TaskSerializer,
+    TaskDetailSerializer
+)
 
-
-@api_view(['POST'])
-def task_create(request: Request) -> Response:
-    try:
-        serializer = TaskCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET'])
-def task_get_by_id(request: Request, pk: int) -> Response:
-    try:
-        obj: Task = Task.objects.get(pk=pk)
-    except Task.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    serializer = TaskCreateSerializer(obj)
-    return Response(
-        data=serializer.data,
-        status=status.HTTP_200_OK,
-    )
-
-
-@api_view(['GET'])
-def task_get_all(request: Request) -> Response:
-    qs = Task.objects.all().order_by('id')
-
-    serializer = TaskSerializer(qs, many=True)
-    return Response(
-        data=serializer.data,
-        status=status.HTTP_200_OK,
-    )
 
 @api_view(['GET'])
 def tasks_stat(request: Request) -> Response:
@@ -64,34 +37,63 @@ def tasks_stat(request: Request) -> Response:
     )
 
 
-class TaskListView(APIView):
+class TaskPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
-    def get(self,request,*args,**kwargs):
-        objs = Task.objects.all()
 
-        weekday = request.query_params.get('weekday')
+class TaskListCreateAPIView(ListCreateAPIView):
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter
+    ]
+    """
+    Реализуйте фильтрацию по полям status и deadline.
+    Реализуйте поиск по полям title и description.
+    Добавьте сортировку по полю created_at.
+    """
+    filterset_fields = ['status', 'deadline']
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at']
+
+    pagination_class = TaskPagination
+
+    def get_queryset(self):
+        qs = Task.objects.all()
+
+        weekday = self.request.query_params.get('weekday')
         if weekday is not None:
             try:
                 weekday = int(weekday)
-                objs = objs.annotate(
+                qs = qs.annotate(
                     weekday=ExtractIsoWeekDay('deadline')
                 ).filter(weekday=weekday)
             except ValueError:
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                raise ValidationError('Invalid weekday')
 
-            objs = objs.order_by('id')
+        qs = qs.order_by('id')
 
-            serializer = TaskSerializer(objs, many=True)
-            return Response(
-                data=serializer.data,
-                status=status.HTTP_200_OK,
-            )
+        return qs
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return TaskCreateSerializer
+        return TaskSerializer
+
+    # def get(self, request: Request) -> Response:
+    #     qs = self.get_queryset()
+    #
+    #     qs = self.filter_queryset(qs)
+    #
+    #     serializer = self.get_serializer(qs, many=True)
+    #     return Response(
+    #         data=serializer.data,
+    #         status=status.HTTP_200_OK,
+    #     )
 
 
-        serializer = TaskSerializer(objs, many=True)
-        return Response(
-            data=serializer.data,
-            status=status.HTTP_200_OK,
-        )
+class TaskDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskDetailSerializer
