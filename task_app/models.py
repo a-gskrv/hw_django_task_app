@@ -4,6 +4,8 @@ from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models.functions import Lower
 
+from task_app.managers import SoftDeleteManager
+
 STATUS_CHOICES = (
     ('10', 'New'),
     ('20', 'In Progress'),
@@ -136,6 +138,19 @@ class Category(models.Model):
         verbose_name='Category name',
     )
 
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name='Category is deleted'
+    )
+
+    deleted_at: datetime = models.DateTimeField(
+        verbose_name='Category deleted at',
+        null=True,
+    )
+
+    objects = SoftDeleteManager()
+
+
     class Meta:
         db_table = 'task_manager_category'
         verbose_name = 'Category'
@@ -152,3 +167,8 @@ class Category(models.Model):
         # if len(self.name) > 20:
         #     return self.name[:17] + '...'
         return self.name
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.deleted_at = datetime.now()
+        self.save()
