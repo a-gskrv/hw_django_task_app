@@ -58,7 +58,7 @@ class TaskListCreateAPIView(ListCreateAPIView):
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
 
-    pagination_class = TaskPagination
+    # pagination_class = TaskPagination
 
     def get_queryset(self):
         qs = Task.objects.all()

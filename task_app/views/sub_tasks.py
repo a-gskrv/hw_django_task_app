@@ -34,7 +34,7 @@ class SubTaskListCreateAPIView(ListCreateAPIView):
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
 
-    pagination_class = SubTaskPagination
+    # pagination_class = SubTaskPagination
 
     queryset = SubTask.objects.all()
 
