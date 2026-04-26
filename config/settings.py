@@ -60,6 +60,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'task_app.pagination.MyCustomCursorPagination',
+    'PAGE_SIZE': 6,
+}
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -120,6 +126,84 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+"""
+Подключить систему логирования работы включенного сервера в проект для отслеживания логов работы приложения. Логи должны загружаться следующим образом:
+
+Отдельно логи работы включенного сервера с выводом в консоль
+
+Отдельно логи HTTP запросов и их статусов в отдельную папку logs в корне проекта  в файл http_logs.log
+
+Отдельно логи запросов в базу данных в отдельную папку logs в корне проекта в файл db_logs.log
+"""
+
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'simple': {  # Имя форматтера; потом будем ссылаться на него из handlers.
+            'format': '[{levelname}] | {asctime}  --  {name}:  ({message})',  #
+            'style': '{',  # Говорим logging, что шаблон написан в стиле str.format, а не через %.
+        },
+        "verbose": {  # Подробный форматтер.
+            "format": "[{levelname}] {asctime} {name} | module={module} | func={funcName} | line={lineno:d} | pid={process:d} | tid={thread:d} | {message}",
+
+            "style": "{",
+        },
+        "sql": {  # Отдельный форматтер для SQL.
+            "format": "[{levelname}] {asctime} {name} | duration={duration} | sql={message}",
+            "style": "{",
+        },
+    },
+
+    'handlers': {  # Здесь описываем, куда физически отправлять лог-записи.
+        'console': {  # Handler с именем console для вывода логов в stdout/stderr терминала.
+            'class': 'logging.StreamHandler',  # Стандартный handler Python для вывода в консоль.
+            'formatter': 'simple',  # Говорим handler'у использовать форматтер simple.
+            'level': 'DEBUG'  # Этот handler будет принимать только INFO и выше.
+        },
+        "http_file": {
+            "class": "logging.handlers.RotatingFileHandler",  # Файловый handler с ротацией по размеру.
+            "filename": LOGS_DIR / "http_logs.log",  # Основной лог приложения.
+            "maxBytes": 10 * 1024 * 1024,  # Ротация после 10 МБ.
+            "backupCount": 10,  # Держим 10 архивных файлов.
+            "formatter": "verbose",  # Пишем подробный формат.
+            "level": "DEBUG",  # Сохраняем все уровни начиная с DEBUG.
+            "encoding": "utf-8",  # Корректная кодировка файла.
+        },
+        "db_file": {  # Отдельный файл под SQL-логи.
+            "class": "logging.handlers.RotatingFileHandler",  # Ротация по размеру.
+            "filename": LOGS_DIR / "db_logs.log",  # Файл для SQL-запросов.
+            "maxBytes": 20 * 1024 * 1024,  # SQL часто объёмный, поэтому лимит чуть выше.
+            "backupCount": 5,  # Храним 5 предыдущих файлов SQL.
+            "formatter": "sql",  # Специальный формат для SQL-записей.
+            "level": "DEBUG",  # SQL в Django логируется на DEBUG уровне.
+            "encoding": "utf-8",  # Корректная кодировка.
+        },
+    },
+
+    'loggers': {
+        "django": {  # Общие системные логи Django.
+            "handlers": ["console"],  #
+            "level": "DEBUG",  #
+            "propagate": False,  # Без всплытия, чтобы не получить дубли.
+        },
+        "django.request": {  # Логи, связанные с HTTP-запросами
+            "handlers": ["http_file"],  # Ошибки запросов дублируем в отдельный http_file-файл.
+            "level": "DEBUG",
+            "propagate": False,  # Не пускаем выше.
+        },
+        "django.db.backends": {  # Логгер SQL-запросов Django ORM.
+            "handlers": ["db_file"],  # SQL пишем только в отдельный db_file.log.
+            "level": "DEBUG" if DEBUG else "INFO",  # В debug-режиме собираем SQL детально, в prod обычно приглушаем.
+            "propagate": False,  # Не смешиваем SQL с общими логами.
+        },
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
