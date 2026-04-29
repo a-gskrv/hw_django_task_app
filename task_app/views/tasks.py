@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -49,11 +50,7 @@ class TaskListCreateAPIView(ListCreateAPIView):
         filters.OrderingFilter,
         filters.SearchFilter
     ]
-    """
-    Реализуйте фильтрацию по полям status и deadline.
-    Реализуйте поиск по полям title и description.
-    Добавьте сортировку по полю created_at.
-    """
+
     filterset_fields = ['status', 'deadline']
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
@@ -97,3 +94,6 @@ class TaskListCreateAPIView(ListCreateAPIView):
 class TaskDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
+
+    permission_classes = [IsAuthenticated]
+

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 
 from environ import Env
@@ -126,16 +126,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+}
 
-"""
-Подключить систему логирования работы включенного сервера в проект для отслеживания логов работы приложения. Логи должны загружаться следующим образом:
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
 
-Отдельно логи работы включенного сервера с выводом в консоль
-
-Отдельно логи HTTP запросов и их статусов в отдельную папку logs в корне проекта  в файл http_logs.log
-
-Отдельно логи запросов в базу данных в отдельную папку logs в корне проекта в файл db_logs.log
-"""
 
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
@@ -189,7 +191,7 @@ LOGGING = {
     'loggers': {
         "django": {  # Общие системные логи Django.
             "handlers": ["console"],  #
-            "level": "DEBUG",  #
+            "level": "INFO",  #
             "propagate": False,  # Без всплытия, чтобы не получить дубли.
         },
         "django.request": {  # Логи, связанные с HTTP-запросами

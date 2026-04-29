@@ -2,7 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
-
+from rest_framework.permissions import IsAuthenticated
 
 from task_app.models import SubTask
 from task_app.serializers import (
@@ -23,6 +23,8 @@ class SubTaskListCreateAPIView(ListCreateAPIView):
         filters.OrderingFilter,
         filters.SearchFilter
     ]
+
+    permission_classes = [IsAuthenticated]
 
     """
     Реализуйте фильтрацию по полям status и deadline.
@@ -46,3 +48,5 @@ class SubTaskListCreateAPIView(ListCreateAPIView):
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
+
+    permission_classes = [IsAuthenticated]

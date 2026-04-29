@@ -1,6 +1,7 @@
 from django.db.models import Count
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -10,6 +11,8 @@ from task_app.serializers.category import CategorySerializer, CategoryCreateSeri
 
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
+
+    permission_classes = [AllowAny, ]
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
