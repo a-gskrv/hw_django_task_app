@@ -18,6 +18,8 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             'deadline',
         ]
 
+        read_only_fields = ['owner',]
+
     def validate_deadline(self, value: datetime):
         # value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
 
@@ -37,6 +39,7 @@ class TaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'created_at',
+            'owner',
         )
 
 
@@ -56,10 +59,12 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             'deadline',
             'subtasks',
             'created_at',
+            'owner',
         ]
         read_only_fields = (
             'id',
             'created_at',
+            'owner',
         )
 
         validators = []

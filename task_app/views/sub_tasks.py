@@ -5,6 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
 from task_app.models import SubTask
+from task_app.permissions import IsOwnerOrReadOnly
 from task_app.serializers import (
     SubTaskSerializer,
     SubTaskCreateSerializer,
@@ -24,13 +25,7 @@ class SubTaskListCreateAPIView(ListCreateAPIView):
         filters.SearchFilter
     ]
 
-    permission_classes = [IsAuthenticated]
-
-    """
-    Реализуйте фильтрацию по полям status и deadline.
-    Реализуйте поиск по полям title и description.
-    Добавьте сортировку по полю created_at.
-    """
+    permission_classes = [IsOwnerOrReadOnly]
 
     filterset_fields = ['status', 'deadline']
     search_fields = ['title', 'description']
@@ -45,8 +40,13 @@ class SubTaskListCreateAPIView(ListCreateAPIView):
             return SubTaskCreateSerializer
         return SubTaskSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
+    # permission_classes = [IsAuthenticated]
