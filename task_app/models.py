@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.contrib.auth.models import User
 from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models.functions import Lower
@@ -51,6 +52,15 @@ class Task(models.Model):
     created_at: datetime = models.DateTimeField(
         verbose_name='Task created at',
         auto_now_add=True
+    )
+
+    owner: User = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        verbose_name='Task owner',
+        related_name='owned_tasks',
+        blank=True,
+        null=True,
     )
 
     class Meta:
@@ -108,6 +118,15 @@ class SubTask(models.Model):
     created_at: datetime = models.DateTimeField(
         verbose_name='Task created at',
         auto_now_add=True
+    )
+
+    owner: User = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        verbose_name='Subtask owner',
+        related_name='owned_subtasks',
+        blank=True,
+        null=True,
     )
 
     class Meta:

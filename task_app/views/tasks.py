@@ -5,15 +5,16 @@ from django.db.models.functions import ExtractIsoWeekDay
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from task_app.models import Task
+from task_app.permissions import IsOwnerOrReadOnly
 from task_app.serializers import (
     TaskCreateSerializer,
     TaskSerializer,
@@ -55,6 +56,8 @@ class TaskListCreateAPIView(ListCreateAPIView):
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
 
+    permission_classes = [IsOwnerOrReadOnly]
+
     # pagination_class = TaskPagination
 
     def get_queryset(self):
@@ -79,6 +82,9 @@ class TaskListCreateAPIView(ListCreateAPIView):
             return TaskCreateSerializer
         return TaskSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
     # def get(self, request: Request) -> Response:
     #     qs = self.get_queryset()
     #
@@ -95,5 +101,14 @@ class TaskDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
+
+
+class UserTasksListView(ListAPIView):
+    serializer_class = TaskSerializer
+
+    permission_classes = [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return Task.objects.filter(owner=self.request.user)
